@@ -1,0 +1,44 @@
+# Jason Holton
+# 2023-01-06
+# Google Data Analytics Professional Certificate (through Coursera), Capstone Project
+# Data files provided by the certification program, licensing found at https://ride.divvybikes.com/data-license-agreement
+
+# The below SQL script is intended to clean data files by removing unecessary attributes, records and nulls/blank cells as 
+well as performing calculations and format changes needed for analysis. Since the only thing that needs changed is the table 
+name in the FROM statement in order to process all 12 raw data files, only one SQL script will be saved. The files being 
+cleaned were first loaded into MS Excel and duplicate start_station_names (and associated row data) removed. The purpose of 
+this is, using Tableau, to see if there are any geographical and demographic differences between member and casual riders. 
+Removing duplicate start stations will greatly simplify the number of data points on the map and therefore make analysis 
+easier (start_station_name is removed in the query since only the latitude/longitude information will be needed). Comparison 
+in Tableau with data that had all start_stations included (over 4 million rows of data) showed no signs of bias when 
+comparing the full vs filtered data.
+
+SELECT 
+  ride_id,
+  rideable_type,
+  started_at,
+#next line formats started_at datetime data as the corresponding day name (string)
+  FORMAT_DATE('%A', started_at) AS start_day,
+  ended_at,
+  FORMAT_DATE('%A', ended_at) AS end_day,
+  TIMESTAMP_DIFF(ended_at, started_at, minute) AS ride_time_minutes,
+  start_station_name,
+  end_station_name,
+  start_lat,
+  start_lng,
+  end_lat,
+  end_lng,
+  member_casual
+FROM 
+  `coursera-capstone-373414.distinct_start_station.tripdata_202201`
+WHERE
+  rideable_type NOT LIKE 'docked%' AND
+  start_station_name <> '' AND
+  start_station_id <> '' AND
+  end_station_name <> '' AND
+  end_station_id <> '' AND
+  start_lat IS NOT NULL AND
+  start_lng IS NOT NULL AND
+  end_lat IS NOT NULL AND
+  end_lng IS NOT NULL AND
+  TIMESTAMP_DIFF(ended_at, started_at, minute) <> 0;
